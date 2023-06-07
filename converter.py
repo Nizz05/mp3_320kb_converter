@@ -11,19 +11,16 @@ def process_file(file_path, target_path):
         return
 
     # Konvertiere oder kopiere die Datei, abhängig vom Dateityp
-    if file_path.lower().endswith('.mp3'):
-        print(f"Kopiere {file_path}...")
-        shutil.copy(file_path, target_path)
-    elif file_path.lower().endswith(('.jpg', '.png')):
-        print(f"Kopiere Bild {file_path}...")
-        shutil.copy(file_path, target_path)
-    else:
+    if file_path.lower().endswith(('.flac', '.wav', '.m4a', '.wma', '.aif', '.aiff')):
         print(f"Konvertiere {file_path}...")
         try:
             audio = AudioSegment.from_file(file_path)
             audio.export(target_path, format='mp3', bitrate='320k')
         except Exception as e:
             print(f"Konnte {file_path} nicht konvertieren: {e}")
+    else:
+        print(f"Kopiere Nicht-Audiodatei {file_path}...")
+        shutil.copy(file_path, target_path)
 
 
 def scan_folders(input_folder, output_folder):
@@ -35,15 +32,15 @@ def scan_folders(input_folder, output_folder):
                 output_path = os.path.join(output_folder, relative_path)
                 os.makedirs(output_path, exist_ok=True)
 
-                # Wenn es sich um eine Bilddatei handelt, behalten wir die ursprüngliche Dateierweiterung bei
-                if name.lower().endswith(('.jpg', '.png')):
-                    target_path = os.path.join(output_path, name)
-                else:
+                # Wenn es sich um eine Audiodatei handelt, konvertieren wir sie in .mp3, sonst behalten wir die Originalerweiterung bei
+                if file_path.lower().endswith(('.flac', '.wav', '.m4a', '.wma', '.aif', '.aiff')):
                     target_path = os.path.join(output_path, os.path.splitext(name)[0] + '.mp3')
+                else:
+                    target_path = os.path.join(output_path, name)
                 executor.submit(process_file, file_path, target_path)
 
 
 # Startpunkt ist der Pfad zu Ihrem Ordner
 input_folder_path = "C:/Users/nicol/OneDrive/Playlist"
-output_folder_path = "C:/Users/nicol/Desktop/outpout"
+output_folder_path = "C:/Users/nicol/OneDrive/playlist_mp3_iphonefriendly"
 scan_folders(input_folder_path, output_folder_path)
