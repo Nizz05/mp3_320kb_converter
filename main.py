@@ -7,12 +7,15 @@ from pydub import AudioSegment
 def process_file(file_path, target_path):
     # Wenn die Ausgabedatei bereits existiert, überspringe die Verarbeitung
     if os.path.exists(target_path):
-        print(f"Überspringe {file_path}, da bereits konvertiert.")
+        print(f"Überspringe {file_path}, da bereits verarbeitet.")
         return
 
     # Konvertiere oder kopiere die Datei, abhängig vom Dateityp
     if file_path.lower().endswith('.mp3'):
         print(f"Kopiere {file_path}...")
+        shutil.copy(file_path, target_path)
+    elif file_path.lower().endswith(('.jpg', '.png')):
+        print(f"Kopiere Bild {file_path}...")
         shutil.copy(file_path, target_path)
     else:
         print(f"Konvertiere {file_path}...")
@@ -31,7 +34,12 @@ def scan_folders(input_folder, output_folder):
                 relative_path = os.path.relpath(path, input_folder)
                 output_path = os.path.join(output_folder, relative_path)
                 os.makedirs(output_path, exist_ok=True)
-                target_path = os.path.join(output_path, os.path.splitext(name)[0] + '.mp3')
+
+                # Wenn es sich um eine Bilddatei handelt, behalten wir die ursprüngliche Dateierweiterung bei
+                if name.lower().endswith(('.jpg', '.png')):
+                    target_path = os.path.join(output_path, name)
+                else:
+                    target_path = os.path.join(output_path, os.path.splitext(name)[0] + '.mp3')
                 executor.submit(process_file, file_path, target_path)
 
 
