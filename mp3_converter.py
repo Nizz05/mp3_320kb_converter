@@ -41,6 +41,7 @@ def scan_folders(input_folder, output_folder):
 
 
 # Startpunkt ist der Pfad zu Ihrem Ordner
-input_folder_path = "C:/Users/nicol/OneDrive/Playlist"
+# input_folder_path = "C:/Users/nicol/OneDrive/Playlist"
+input_folder_path = "C:/Users/nicol/Desktop/outpout"
 output_folder_path = "C:/Users/nicol/OneDrive/playlist_mp3_iphonefriendly"
 scan_folders(input_folder_path, output_folder_path)
