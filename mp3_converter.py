@@ -11,7 +11,7 @@ def process_file(file_path, target_path):
         return
 
     # Konvertiere oder kopiere die Datei, abhängig vom Dateityp
-    if file_path.lower().endswith(('.flac', '.wav', '.m4a', '.wma', '.aif', '.aiff')):
+    if file_path.lower().endswith(('.flac', '.wav', '.wma', '.aif', '.aiff')):
         print(f"Konvertiere {file_path}...")
         try:
             audio = AudioSegment.from_file(file_path)
@@ -32,8 +32,9 @@ def scan_folders(input_folder, output_folder):
                 output_path = os.path.join(output_folder, relative_path)
                 os.makedirs(output_path, exist_ok=True)
 
-                # Wenn es sich um eine Audiodatei handelt, konvertieren wir sie in .mp3, sonst behalten wir die Originalerweiterung bei
-                if file_path.lower().endswith(('.flac', '.wav', '.m4a', '.wma', '.aif', '.aiff')):
+                # Wenn es sich um eine Audiodatei handelt, konvertieren wir sie in .mp3, sonst behalten wir die
+                # Originalerweiterung bei
+                if file_path.lower().endswith(('.flac', '.wav', '.wma', '.aif', '.aiff')):
                     target_path = os.path.join(output_path, os.path.splitext(name)[0] + '.mp3')
                 else:
                     target_path = os.path.join(output_path, name)
@@ -41,7 +42,7 @@ def scan_folders(input_folder, output_folder):
 
 
 # Startpunkt ist der Pfad zu Ihrem Ordner
-# input_folder_path = "C:/Users/nicol/OneDrive/Playlist"
-input_folder_path = "C:/Users/nicol/Desktop/outpout"
+input_folder_path = "C:/Users/nicol/OneDrive/Playlist"
 output_folder_path = "C:/Users/nicol/OneDrive/playlist_mp3_iphonefriendly"
+# output_folder_path = "C:/Users/nicol/OneDrive/playlist_mp3_iphonefriendly"
 scan_folders(input_folder_path, output_folder_path)
