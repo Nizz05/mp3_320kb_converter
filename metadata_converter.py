@@ -1,11 +1,10 @@
 import os
 from tinytag import TinyTag
-from mutagen import File
 from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, TIT2, TPE1, TALB, TCON, TRCK, TDRC, APIC
+from mutagen.id3 import ID3, TIT2, TPE1, TALB, TCON, TRCK, TDRC
 
 
-def copy_metadata_and_cover(original_file, converted_file):
+def copy_metadata(original_file, converted_file):
     try:
         # Get metadata from the original file
         original_metadata = TinyTag.get(original_file)
@@ -29,28 +28,11 @@ def copy_metadata_and_cover(original_file, converted_file):
 
         mp3_file.save()
 
-        # Load both files with mutagen
-        original_file_tags = File(original_file)
-        mp3_file = MP3(converted_file, ID3=ID3)
-
-        # Copy cover art
-        if 'APIC:' in original_file_tags.keys():
-            artwork = original_file_tags['APIC:']
-            mp3_file.tags.add(
-                APIC(
-                    encoding=artwork.encoding,
-                    mime=artwork.mime,
-                    type=artwork.type,
-                    desc=artwork.desc,
-                    data=artwork.data
-                )
-            )
-            mp3_file.save()
     except Exception as e:
-        print(f"Could not copy metadata and/or cover from {original_file} to {converted_file}: {e}")
+        print(f"Could not copy metadata from {original_file} to {converted_file}: {e}")
 
 
-def copy_metadata_and_cover_in_folder(input_folder, output_folder):
+def copy_metadata_in_folder(input_folder, output_folder):
     for path, subdirs, files in os.walk(input_folder):
         for name in files:
             if name.lower().endswith(('.flac', '.wav', '.wma', '.aif', '.aiff')):
@@ -58,10 +40,4 @@ def copy_metadata_and_cover_in_folder(input_folder, output_folder):
                 relative_path = os.path.relpath(path, input_folder)
                 converted_file_path = os.path.join(output_folder, relative_path, os.path.splitext(name)[0] + '.mp3')
                 if os.path.exists(converted_file_path):
-                    copy_metadata_and_cover(original_file_path, converted_file_path)
-
-
-# Replace these paths with your actual paths
-input_folder_path = "C:/Users/nicol/OneDrive/Playlist"
-output_folder_path = "C:/Users/nicol/OneDrive/playlist_mp3_iphonefriendly"
-copy_metadata_and_cover_in_folder(input_folder_path, output_folder_path)
+                    copy_metadata(original_file_path, converted_file_path)

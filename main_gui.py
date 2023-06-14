@@ -1,5 +1,8 @@
 import wx
-import mp3_converter  # Achte darauf, dass mp3_converter im gleichen Ordner wie dein GUI-Skript ist
+import mp3_converter  # Stellen Sie sicher, dass mp3_converter im gleichen Verzeichnis wie Ihr GUI-Skript ist
+import metadata_converter
+import cover_importer
+import cover_extractor
 
 
 class Mywin(wx.Frame):
@@ -29,6 +32,9 @@ class Mywin(wx.Frame):
         self.convert_btn = wx.Button(panel, label="Start Conversion")
         self.convert_btn.SetBackgroundColour(wx.RED)
 
+        # Erstellen Sie die Fortschrittsanzeige
+        self.progress = wx.Gauge(panel, range=100)
+
         input_dir_btn.Bind(wx.EVT_BUTTON, self.OnInputDir)
         output_dir_btn.Bind(wx.EVT_BUTTON, self.OnOutputDir)
         self.convert_btn.Bind(wx.EVT_BUTTON, self.OnConvert)
@@ -40,6 +46,9 @@ class Mywin(wx.Frame):
         vbox.Add(output_dir_btn, 1, wx.EXPAND | wx.ALL, 5)
 
         vbox.Add(self.convert_btn, 1, wx.EXPAND | wx.ALL, 5)
+
+        # Fügen Sie die Fortschrittsanzeige hinzu
+        vbox.Add(self.progress, 1, wx.EXPAND | wx.ALL, 5)
 
         panel.SetSizer(vbox)
 
@@ -81,10 +90,21 @@ class Mywin(wx.Frame):
             print("Starting conversion...")
             self.convert_btn.Disable()
             self.convert_btn.SetBackgroundColour(wx.RED)
-            mp3_converter.scan_folders(input_dir, output_dir)
+            self.progress.SetValue(0)
+
+            for progress in mp3_converter.scan_folders(input_dir, output_dir):
+                self.progress.SetValue(round(progress))
+
+            metadata_converter.copy_metadata_in_folder(input_dir, output_dir)
+            cover_extractor.extract_cover(input_dir, output_dir)
+            cover_importer.import_cover(output_dir, output_dir)
+            cover_importer.delete_png_files(output_dir)
             print("Conversion finished!")
             self.convert_btn.Enable()
             self.check_dirs()
+
+    def update_progress(self, progress):
+        self.progress.SetValue(round(progress))
 
 
 app = wx.App()
