@@ -21,8 +21,8 @@ def kopiere_dateien(input_ordner, output_ordner, datei_endungen):
 
 def main():
     input_ordner = 'C:\\Users\\nicol\\OneDrive\\Playlist'
-    output_ordner = 'C:\\Users\\nicol\\Desktop\\Test'
-    datei_endungen = ('.mp3', '.m4a')
+    output_ordner = 'G:\\Test1'
+    datei_endungen = ('.aiff', '.aif', '.wav')
 
     kopiere_dateien(input_ordner, output_ordner, datei_endungen)
 

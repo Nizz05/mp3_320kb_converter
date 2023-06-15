@@ -9,8 +9,9 @@ class Mywin(wx.Frame):
     def __init__(self, parent, title):
         super(Mywin, self).__init__(parent, title=title, size=(600, 300))
         self.SetSizeHints(wx.Size(500, 300))  # Minimale Größe setzen
+        self.SetSize
 
-        self.SetIcon(wx.Icon('images/logo.png'))
+        ##self.SetIcon(wx.Icon('images/logo.png'))
 
         self.InitUI()
 
