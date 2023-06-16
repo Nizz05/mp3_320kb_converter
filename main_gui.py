@@ -9,7 +9,7 @@ import cover_extractor
 
 class Mywin(wx.Frame):
     def __init__(self, parent, title):
-        super(Mywin, self).__init__(parent, title=title, size=(600, 300))
+        super(Mywin, self).__init__(parent, title=title, size=(500, 300))
         self.SetSizeHints(wx.Size(500, 300))  # Set minimum size
         self.InitUI()
         self.running = False
@@ -34,12 +34,29 @@ class Mywin(wx.Frame):
         self.convert_btn = wx.Button(panel, label="Start Conversion")
         self.convert_btn.SetBackgroundColour(wx.RED)
 
+        self.stop_btn = wx.Button(panel, label="Stop Conversion")
+        self.stop_btn.SetBackgroundColour(wx.RED)
+        self.stop_btn.Disable()
+
         # Erstellen Sie die Fortschrittsanzeige
         self.progress = wx.Gauge(panel, range=100)
+        self.progress_txt = wx.StaticText(panel, label="0%")  # Erstellt das Label für die Prozentanzeige
+
+        # Erstellt den BoxSizer für die horizontale Anordnung von Fortschrittsbalken und Prozentsatzanzeige
+
+        progress_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        progress_sizer.Add(self.progress_txt, 1, wx.ALIGN_BOTTOM | wx.ALL, 5)
+        progress_sizer.Add(self.progress, 100, wx.ALIGN_BOTTOM | wx.ALL, 5)
+
+        # Erstellen Sie einen BoxSizer für die horizontale Anordnung von Start- und Stopp-Button
+        button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        button_sizer.Add(self.convert_btn, 1, wx.EXPAND | wx.ALL, 1)
+        button_sizer.Add(self.stop_btn, 1, wx.EXPAND | wx.ALL, 1)
 
         input_dir_btn.Bind(wx.EVT_BUTTON, self.OnInputDir)
         output_dir_btn.Bind(wx.EVT_BUTTON, self.OnOutputDir)
         self.convert_btn.Bind(wx.EVT_BUTTON, self.OnConvert)
+        self.stop_btn.Bind(wx.EVT_BUTTON, self.OnStop)
 
         vbox.Add(input_dir_box, 0, wx.EXPAND | wx.ALL, 5)
         vbox.Add(input_dir_btn, 1, wx.EXPAND | wx.ALL, 5)
@@ -47,10 +64,11 @@ class Mywin(wx.Frame):
         vbox.Add(output_dir_box, 0, wx.EXPAND | wx.ALL, 5)
         vbox.Add(output_dir_btn, 1, wx.EXPAND | wx.ALL, 5)
 
-        vbox.Add(self.convert_btn, 1, wx.EXPAND | wx.ALL, 5)
+        # Fügen Sie den Button-Sizer hinzu, anstatt nur den Start-Button
+        vbox.Add(button_sizer, 1, wx.EXPAND | wx.ALL, 5)
 
-        # Fügen Sie die Fortschrittsanzeige hinzu
-        vbox.Add(self.progress, 1, wx.EXPAND | wx.ALL, 5)
+        # Fügen Sie die Fortschrittsanzeige und Prozentsatzanzeige hinzu
+        vbox.Add(progress_sizer, 1, wx.EXPAND | wx.ALL, 5)
 
         panel.SetSizer(vbox)
 
@@ -82,6 +100,11 @@ class Mywin(wx.Frame):
     def OnConvert(self, event):
         self.thread = threading.Thread(target=self.start_conversion, args=(event,))
         self.thread.start()
+        self.stop_btn.Enable()  # Aktivieren Sie den Stop-Button, wenn die Konvertierung beginnt
+
+    def OnStop(self, event):
+        self.running = False
+        self.stop_btn.Disable()  # Deaktivieren Sie den Stop-Button, wenn er gedrückt wird
 
     def start_conversion(self, event):
         input_dir = self.input_dir_lbl.GetLabel()
@@ -92,16 +115,19 @@ class Mywin(wx.Frame):
                                    wx.OK | wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
+            self.stop_btn.Disable()
         else:
             print("Starting conversion...")
             wx.CallAfter(self.convert_btn.Disable)
             wx.CallAfter(self.convert_btn.SetBackgroundColour, wx.RED)
             wx.CallAfter(self.progress.SetValue, 0)
+            wx.CallAfter(self.progress_txt.SetLabel, "0%")  # Setzt die Prozentanzeige auf 0%
             self.running = True
             for progress in mp3_converter.scan_folders(input_dir, output_dir):
                 if not self.running:  # Check the flag here
                     break
                 wx.CallAfter(self.progress.SetValue, round(progress))
+                wx.CallAfter(self.progress_txt.SetLabel, f"{round(progress)}%")  # Aktualisiert die Prozentanzeige
 
             if self.running:
                 metadata_converter.copy_metadata_in_folder(input_dir, output_dir)
@@ -110,6 +136,7 @@ class Mywin(wx.Frame):
                 cover_importer.delete_png_files(output_dir)
                 print("Conversion finished!")
                 wx.CallAfter(self.convert_btn.Enable)
+                wx.CallAfter(self.stop_btn.Disable)  # Deaktivieren Sie den Stop-Button, wenn die Konvertierung abgeschlossen ist
                 self.check_dirs()
 
     def OnClose(self, event):
