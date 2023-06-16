@@ -1,3 +1,5 @@
+import threading
+
 import wx
 import mp3_converter  # Stellen Sie sicher, dass mp3_converter im gleichen Verzeichnis wie Ihr GUI-Skript ist
 import metadata_converter
@@ -8,12 +10,11 @@ import cover_extractor
 class Mywin(wx.Frame):
     def __init__(self, parent, title):
         super(Mywin, self).__init__(parent, title=title, size=(600, 300))
-        self.SetSizeHints(wx.Size(500, 300))  # Minimale Größe setzen
-        self.SetSize
-
-        ##self.SetIcon(wx.Icon('images/logo.png'))
-
+        self.SetSizeHints(wx.Size(500, 300))  # Set minimum size
         self.InitUI()
+        self.running = False
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
+        self.thread = threading.Thread(target=lambda: None)
 
     def InitUI(self):
         panel = wx.Panel(self)
@@ -79,6 +80,10 @@ class Mywin(wx.Frame):
         dlg.Destroy()
 
     def OnConvert(self, event):
+        self.thread = threading.Thread(target=self.start_conversion, args=(event,))
+        self.thread.start()
+
+    def start_conversion(self, event):
         input_dir = self.input_dir_lbl.GetLabel()
         output_dir = self.output_dir_lbl.GetLabel()
 
@@ -89,23 +94,29 @@ class Mywin(wx.Frame):
             dlg.Destroy()
         else:
             print("Starting conversion...")
-            self.convert_btn.Disable()
-            self.convert_btn.SetBackgroundColour(wx.RED)
-            self.progress.SetValue(0)
-
+            wx.CallAfter(self.convert_btn.Disable)
+            wx.CallAfter(self.convert_btn.SetBackgroundColour, wx.RED)
+            wx.CallAfter(self.progress.SetValue, 0)
+            self.running = True
             for progress in mp3_converter.scan_folders(input_dir, output_dir):
-                self.progress.SetValue(round(progress))
+                if not self.running:  # Check the flag here
+                    break
+                wx.CallAfter(self.progress.SetValue, round(progress))
 
-            metadata_converter.copy_metadata_in_folder(input_dir, output_dir)
-            cover_extractor.extract_cover(input_dir, output_dir)
-            cover_importer.import_cover(output_dir, output_dir)
-            cover_importer.delete_png_files(output_dir)
-            print("Conversion finished!")
-            self.convert_btn.Enable()
-            self.check_dirs()
+            if self.running:
+                metadata_converter.copy_metadata_in_folder(input_dir, output_dir)
+                cover_extractor.extract_cover(input_dir, output_dir)
+                cover_importer.import_cover(output_dir, output_dir)
+                cover_importer.delete_png_files(output_dir)
+                print("Conversion finished!")
+                wx.CallAfter(self.convert_btn.Enable)
+                self.check_dirs()
 
-    def update_progress(self, progress):
-        self.progress.SetValue(round(progress))
+    def OnClose(self, event):
+        self.running = False
+        if self.thread.is_alive():  # Check if thread has been started
+            self.thread.join()  # Wait for the conversion thread to finish
+        event.Skip()  # Continue the close event
 
 
 app = wx.App()
