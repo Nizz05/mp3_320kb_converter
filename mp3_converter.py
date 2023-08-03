@@ -10,7 +10,7 @@ def process_file(file_path, target_path):
         return
 
     # Konvertiere oder kopiere die Datei, abhängig vom Dateityp
-    if file_path.lower().endswith(('.flac', '.wav', '.wma', '.aif', '.aiff')):
+    if file_path.lower().endswith(('.flac', '.wma',)):
         print(f"Konvertiere {file_path}...")
         try:
             audio = AudioSegment.from_file(file_path)
@@ -25,7 +25,7 @@ def scan_folders(input_folder, output_folder):
     total_files = 0
     for path, subdirs, files in os.walk(input_folder):
         for name in files:
-            if name.lower().endswith(('.flac', '.wav', '.wma', '.aif', '.aiff')):
+            if name.lower().endswith(('.flac', '.wma')):
                 total_files += 1
 
     converted_files = 0
@@ -38,7 +38,7 @@ def scan_folders(input_folder, output_folder):
                 output_path = os.path.join(output_folder, relative_path)
                 os.makedirs(output_path, exist_ok=True)
 
-                if file_path.lower().endswith(('.flac', '.wav', '.wma', '.aif', '.aiff')):
+                if file_path.lower().endswith(('.flac', '.wma')):
                     target_path = os.path.join(output_path, os.path.splitext(name)[0] + '.mp3')
                     future = executor.submit(process_file, file_path, target_path)
                     futures.append(future)

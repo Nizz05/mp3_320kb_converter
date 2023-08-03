@@ -131,9 +131,9 @@ class Mywin(wx.Frame):
 
             if self.running:
                 metadata_converter.copy_metadata_in_folder(input_dir, output_dir)
-                cover_extractor.extract_cover(input_dir, output_dir)
-                cover_importer.import_cover(output_dir, output_dir)
-                cover_importer.delete_png_files(output_dir)
+                #cover_extractor.extract_cover(input_dir, output_dir)
+                #cover_importer.import_cover(output_dir, output_dir)
+                #cover_importer.delete_png_files(output_dir)
                 print("Conversion finished!")
                 wx.CallAfter(self.convert_btn.Enable)
                 wx.CallAfter(self.stop_btn.Disable)  # Deaktivieren Sie den Stop-Button, wenn die Konvertierung abgeschlossen ist
